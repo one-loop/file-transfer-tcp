@@ -1,25 +1,26 @@
 import os
 import socket
 
-port = 5069
 # create a TCP client internet socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("localhost", port)) # create local host socket port
+client.connect(("localhost", 5069))  # connect to receiver
 
-# open the file and find the file size to send to the receiver
-file = open("image.png", "rb")
-file_size = os.path.getsize("image.png")
+# define file details
+filename = "image2.png"
+filesize = os.path.getsize(filename)
 
-# send the file size and file name to the receiver
-client.send("received_image.png".encode())
-client.send(str(file_size).encode())
+# send metadata: "filename|filesize"
+header = f"{filename}|{filesize}"
+client.send(header.encode())  # send header
 
-# read the file data and send it to the receiver
-data = file.read()
-client.sendall(data)
-client.send(b"<EOF>") # send end of file signal to the receiver
-print("file sent successfully")
+# wait a tiny bit (optional, to avoid read collision)
+import time; time.sleep(0.1)
 
-# close the file and client socket
-file.close()
+# send file data
+with open(filename, "rb") as file:
+    data = file.read()
+    client.sendall(data)
+
+client.send(b"<EOF>")  # send EOF signal
+print("File sent successfully.")
 client.close()
