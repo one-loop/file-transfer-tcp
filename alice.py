@@ -1,13 +1,18 @@
 import socket
 import os
+import json
 
 TRACKER_HOST = "localhost"
 TRACKER_PORT = 6000
-# IMAGE_NAME = "image.png"
 IMAGE_NAME = "img2.jpg"
 
-# NOTE: make these peers dynamic/not hardcoded
-PEERS = [("localhost", 7001), ("localhost", 7002)]  # Add more peers if needed
+# Remove hardcoded peers; instead, fetch available peers from tracker
+def get_peers():
+    with socket.socket() as s:
+        s.connect((TRACKER_HOST, TRACKER_PORT))
+        s.send("GET_PEERS".encode())
+        data = s.recv(4096).decode()
+        return json.loads(data)
 
 def chunk_file(filename, size=1024*512):
     chunks = []
@@ -69,18 +74,21 @@ def register_chunk(chunk_name, filename, peer_port):
         s.recv(1024)
         print(f"[ALICE] Registered {chunk_name} with tracker.")
 
-
 def main():
     # get the chunks for the file we want to upload to the peers
     filename = IMAGE_NAME
     chunks = chunk_file(filename)
-    
+    peers = get_peers()  # fetch available peers from tracker
+    if not peers:
+        print("[ALICE] No peers registered. Exiting...")
+        return
+
     # iterate through all the chunks of the file
     for i, chunk in enumerate(chunks):
         # divide the chunks equally between all peers. Do this by storing the
         # first chunk in the first peer, the second in the second, and so on until there are no more peers
         # then start again from the first peer
-        peer_host, peer_port = PEERS[i % len(PEERS)]
+        peer_host, peer_port = peers[i % len(peers)]
 
         # upload each chunk to the peer and register it with the tracker
         upload_chunk(chunk, peer_host, peer_port)
@@ -92,12 +100,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-# alice.py
-
-# This script is responsible for chunking a file and uploading each chunk to a peer.
-# It also registers each chunk with the tracker server.
-# It connects to the tracker server to register the chunks and their respective peers.
-# It connects to the peers to upload the chunks.
-# The script uses a round-robin approach to distribute the chunks among the available peers.
-# The script uses a fixed chunk size of 512 KB.
-# The script uses a simple socket connection to communicate with the tracker and peers.

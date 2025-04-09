@@ -71,5 +71,13 @@ def start_peer():
         conn, addr = peer.accept()
         threading.Thread(target=handle_client, args=(conn, addr)).start()
 
+def register_with_tracker():
+    with socket.socket() as s:
+        s.connect(("localhost", 6000))
+        s.send(f"PEER_REGISTER|{PEER_PORT}".encode())
+        s.recv(1024)
+        print(f"[PEER] Registered with tracker on port {PEER_PORT}")
+
 if __name__ == "__main__":
+    register_with_tracker()
     start_peer()

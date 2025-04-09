@@ -3,8 +3,9 @@ import socket
 import threading
 import json
 
-# { filename: [ (chunk_name, peer_address), ... ] }
+# Existing file registry and new peer registry
 file_registry = {}
+peer_registry = []  # stores tuples (peer_ip, peer_port)
 
 def handle_client(conn, addr):
     # this function handles incoming connections from peers
@@ -12,8 +13,23 @@ def handle_client(conn, addr):
     # receive data from the peer
     data = conn.recv(4096).decode()
 
-    # check if the data is a register or a get request
-    if data.startswith("REGISTER"):
+    # New command: PEER_REGISTER - peers register themselves
+    if data.startswith("PEER_REGISTER"):
+        # Expected format: PEER_REGISTER|peer_port
+        _, peer_port = data.split("|")
+        peer_entry = (addr[0], int(peer_port))
+        # Avoid duplicate registration
+        if peer_entry not in peer_registry:
+            peer_registry.append(peer_entry)
+            print(f"[TRACKER] Registered peer: {peer_entry}")
+        conn.send(b"PEER_REGISTERED")
+    
+    elif data.startswith("GET_PEERS"):
+        # Send list of currently registered peers
+        conn.send(json.dumps(peer_registry).encode())
+        print("[TRACKER] Sent peer list")
+    
+    elif data.startswith("REGISTER"):
         # Alice sends a register request to the tracker
         # data format: REGISTER|filename|chunk_name|peer_port
         _, filename, chunk_name, peer_port = data.split("|")
