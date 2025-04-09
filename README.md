@@ -31,3 +31,4 @@ Follow these steps:
    python3 bob.py
    ```
    Bob will download the chunks from the registered peers and reconstruct the file.
+   The file should appear in the current working directory as reconstructed_[filename.extension]
