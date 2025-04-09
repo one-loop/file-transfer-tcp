@@ -6,7 +6,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(("localhost", 5069))  # connect to receiver
 
 # define file details
-filename = "image2.png"
+filename = "img2.jpg"
 filesize = os.path.getsize(filename)
 
 # send metadata: "filename|filesize"
