@@ -1,9 +1,4 @@
-
-<<<<<<< HEAD
-# How to Run the File Distribution Program
-=======
 # How to Run the File Distribution Code 📋
->>>>>>> e62bc9f56962abbf5f633674a89383ed307ec2fc
 
 Follow these steps:
 
@@ -35,7 +30,5 @@ Follow these steps:
    python3 bob.py
    ```
    Bob will download the chunks from the registered peers and reconstruct the file.
-<<<<<<< HEAD
-=======
+
    The file should appear in the current working directory as reconstructed_[filename.extension]
->>>>>>> e62bc9f56962abbf5f633674a89383ed307ec2fc
