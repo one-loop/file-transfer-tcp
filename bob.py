@@ -26,7 +26,6 @@ def download_chunk(chunk_name, peer_host, peer_port):
         s.send(f"SEND|{chunk_name}".encode())
         with open(chunk_name, "wb") as f:
             # receive the chunk data from the peer and write it to a file
-            # print(f"[BOB] Receiving {chunk_name} from {peer_host}:{peer_port}")
             while True:
                 data = s.recv(4096)
                 if not data:
@@ -34,7 +33,7 @@ def download_chunk(chunk_name, peer_host, peer_port):
                 f.write(data)
 
 def reconstruct_file(output_file, chunk_names):
-    # sort using the numeric part after 'part'. This is important to ensure the image is reconstructed in the correct order
+    # sort using the numeric part after 'part'. This is important to ensure the file is reconstructed in the correct order
     sorted_chunks = sorted(chunk_names, key=lambda name: int(name.rsplit("part", 1)[-1]))
     print("Reconstructing the File")
     # open the output file in binary mode and write all the chunks to it
@@ -72,9 +71,14 @@ def main():
         # add the chunk name to the list of chunk names, which will be used to reconstruct the file
         chunk_names.append(chunk_name)
 
-    # Ask for the name of the reconstructed file
-    output_filename = input("Enter name for the reconstructed file (e.g., 'reconstructed_filename.ext'): ")
-    
+    # Ask for the name of the reconstructed file (without extension)
+    base_name = input("Enter name for the reconstructed file (without extension): ")
+
+    # Automatically retrieve the extension from the first chunk and add it to the base name
+    # Assuming all chunks have the same extension
+    extension = chunk_names[0].split('.')[-2]  # Get the file extension from the chunk name
+    output_filename = f"{base_name}.{extension}"  # Combine base name with extension
+
     # reconstruct the file from all the downloaded chunks
     reconstruct_file(output_filename, chunk_names)
     print(f"[BOB] File reconstruction complete: {output_filename}")
